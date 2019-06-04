@@ -68,7 +68,7 @@ void setPWM_raw(int channel, int on_val, int off_val){
 
 void setPWM(int channel, int value){
     
-    if (value>200) return; //safety line, dont go over 200 for now
+    if (value>300) return; //safety line, dont go over 300 for now
     
     if (value<0) value=0;
     if (value>530) value=530;
@@ -194,6 +194,10 @@ void getOrientation(float ax,float ay,float az,float gx,float gy,float gz,float 
 	lastTime=micros();
 }
 
+
+int inputP=0;
+int inputD=0;
+
 float height=0;
 void doFrame(){
     readInput();
@@ -221,22 +225,35 @@ void doFrame(){
     getOrientation(ax,ay,az,gx,gy,gz,mx,my,mz);
     
     //inputValues[0]=40;
+    int inputRoll =inputValues[0];
+    int inputPitch=inputValues[1];
+    int inputYaw  =0;//inputValues[2];
+    int inputPower=inputValues[3];
     
     float* output;
     int* motorSpeeds= new int[4];
     
+    if (inputP!=inputValues[4] || inputD!=inputValues[5]){
+        inputP    =inputValues[4];
+        inputD    =inputValues[5];
+        controller->setPD(inputP,inputD);
+    }
+    
     output=controller->run(new Vector3D(roll*3.1415/180,pitch*3.1415/180,-yaw*3.1415/180),
-                         new Vector4D(0,0,0,inputValues[0]/100.0f));
+                         new Vector4D(inputRoll/1000.0f,inputPitch/1000.0f,inputYaw/1000.0f,inputPower/100.0f));
 
-    for (int i=0;i<4;i++)
-      motorSpeeds[i]=(int)output[i];
+    //for (int i=0;i<4;i++)
+    motorSpeeds[0]=(int)output[0];
+    motorSpeeds[1]=(int)output[1];
+    motorSpeeds[2]=(int)output[2];
+    motorSpeeds[3]=(int)output[3];
     
     
     for (int i=0;i<4;i++)
         setPWM(i,motorSpeeds[i]);
         
     //printf("%i %i %i %i \n",motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3]);
-    sendData(7,int(roll),int(pitch),int(yaw),motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3]);
+    sendData(11,int(roll),int(pitch),int(yaw/4),motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3],/*inputRoll,inputPitch*/inputP*2,inputD*2,inputPower,inputYaw);
     i++;    
 }
 

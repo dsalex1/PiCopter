@@ -1,0 +1,109 @@
+<html>
+
+    <head>
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    </head>
+
+    <body>
+        <button id="goFS">Go fullscreen</button>
+        <script>
+            var goFS = document.getElementById("goFS");
+            goFS.addEventListener("click", function () {
+                document.body.requestFullscreen();
+                document.getElementById("goFS").style.display = "none";
+                document.getElementById("joysticks").style.display = "block";
+            }, false);
+        </script>
+
+        <div id="joysticks" style="display:hidden">
+            <div class="leftArea"> </div>
+            <div class="rightArea"> </div>
+        </div>
+
+        <style>
+            .leftArea {
+                position: absolute;
+                top: 20px;
+                left: 0px;
+                bottom: 0px;
+                right: 50vw;
+            }
+
+            .rightArea {
+                position: absolute;
+                top: 0px;
+                left: 50vw;
+                bottom: -50px;
+                right: 0px;
+            }
+        </style>
+
+        <script src="https://yoannmoi.net/nipplejs/javascripts/nipplejs.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+        <script>
+            var leftArea = document.querySelector('.leftArea')
+            var rightArea = document.querySelector('.rightArea')
+
+            var leftOptions = {
+                zone: leftArea,
+                color: "red",
+                size: 200
+            }
+
+            var rightOptions = {
+                zone: rightArea,
+                mode: 'semi',
+                color: "blue",
+                catchDistance: 15000,
+                size: 100
+            }
+
+            var leftNipple = nipplejs.create(leftOptions)
+            var rightNipple = nipplejs.create(rightOptions)
+
+            serialize = (obj) => {
+                var str = []
+                for (var p in obj)
+                    if (obj.hasOwnProperty(p)) {
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]))
+                    }
+                return str.join("&")
+            }
+            xr = 0
+            xl = 0
+            yr = 0
+            yl = 0
+            sendData = () => {
+                const Http = new XMLHttpRequest()
+                Http.open("GET", window.location.href +
+                    "input?" + serialize({ xr, yr, xl, yl }))
+                Http.send()
+            }
+
+            leftNipple.on('move', _.throttle((evt, data) => {
+                xl = Math.cos(data.angle.radian) * data.force
+                yl = Math.sin(data.angle.radian) * data.force
+                sendData()
+            }, 100, { trailing: false }))
+            leftNipple.on('end', () => {
+                xl = 0
+                yl = 0
+                sendData()
+            })
+
+            rightNipple.on('move', _.throttle((evt, data) => {
+                xr = Math.cos(data.angle.radian) * data.force
+                yr = Math.sin(data.angle.radian) * data.force
+                sendData()
+            }, 100, { trailing: false }))
+            rightNipple.on('end', () => {
+                xr = 0
+                sendData()
+            })
+
+            window.scrollTo(0, 1);
+        </script>
+    </body>
+
+</html>

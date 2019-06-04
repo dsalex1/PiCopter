@@ -62,13 +62,13 @@ class QuadController{
 	
   const float steerConst=1;
 
-  const float rotKp=50; //initial 50
+  float rotKp=10; //initial 50
   const float rotKi=0;
-  const float rotKd=40; //initial 10
+  float rotKd=2; //initial 10
 
   const float posKp=10;
   const float posKi=0;
-  const float posKd=8;
+  const float posKd=2;
 
   const int scalar=5;
 	//                   R  P  Y  X  Y  Z
@@ -86,13 +86,24 @@ class QuadController{
 	
 	public:
     QuadController(){
-      rollCtl = new controller(rotKp,rotKi,rotKd);
+        rollCtl = new controller(rotKp,rotKi,rotKd);
     	pitchCtl = new controller(rotKp,rotKi,rotKd);
     	yawCtl = new controller(rotKp,rotKi,rotKd);
     	XCtl = new controller(posKp,posKi,posKd);
     	YCtl = new controller(posKp,posKi,posKd);
     	ZCtl = new controller(posKp,posKi,posKd);
     } 
+    
+    void setPD(float P, float D){
+        rotKp=P;
+        rotKd=D;
+	rollCtl = new controller(rotKp,rotKi,rotKd);
+    	pitchCtl = new controller(rotKp,rotKi,rotKd);
+    	yawCtl = new controller(rotKp,rotKi,rotKd);
+    	XCtl = new controller(posKp,posKi,posKd);
+    	YCtl = new controller(posKp,posKi,posKd);
+    	ZCtl = new controller(posKp,posKi,posKd);
+    }
 	
 	/**
 	 * calculate motor speeds by using an PID controllor on the inputs.
@@ -140,10 +151,11 @@ class QuadController{
             output[i]=output[i] +  coeff[i][3]*XCtl->output    + coeff[i][4]*YCtl->output     + coeff[i][5]*ZCtl->output;
 	    output[i]*=scalar;
 	    output[i]+=50;
-            output[i]=output[i]*input->w;
-
             if (output[i]<0)  output[i]=0;
             if (output[i]>100)output[i]=100;
+	    
+	    output[i]=output[i]*input->w;
+
         }
         
         delete rot;
