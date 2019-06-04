@@ -1,9 +1,10 @@
 from tkinter import *
 from time import sleep
 sys.path.insert(0, './includes')
-from Plotter import Plotter,Plotter2D
+from Plotter import getTurtleScreen,turtleOnkey,Plotter,Plotter2D
 from CPoller import *
 
+exiting=False
 plotting=True
 def main():
 
@@ -18,6 +19,15 @@ def main():
     sliderLabel = Label(root, text='Speed for PWM')
     sliderLabel.pack()
 
+    def close():
+        global exiting
+        exiting=True
+        
+
+    getTurtleScreen()._root.protocol("WM_DELETE_WINDOW", close)
+    turtleOnkey(close, "Up")
+    root.protocol("WM_DELETE_WINDOW", close)
+
     def updatePWM(value):
         value=int(value)
         #print(value)
@@ -30,6 +40,9 @@ def main():
         global plotting
         startPollingThread()
         plotting=True
+    w2 = Button(root, text="Close", command=close)
+    w2.pack()
+    
     w2 = Button(root, text="Restart C Programm", command=startPlotting)
     w2.pack()
 
@@ -48,6 +61,8 @@ def main():
     #baro = Plotter((1200, 250), (-600, -500), (-1000,1000), 2, 3)
     #mag2D=Plotter2D((300, 300), (0, -160), (-4000, 4000), 3, 3)
     #acc2D=Plotter2D((300, 300), (0, 160), (-1000, 1000), 3, 3)
+   
+
     while (True):
         if(plotting):
             inp = getCurrentInput() 
@@ -61,8 +76,20 @@ def main():
             #acc2D.plot([(inp[1],inp[2]),(inp[0],inp[2]),(inp[0],inp[1])])
             
             sleep(0.02)#sleep(1)
+        if (exiting==True):
+            getTurtleScreen()._root.destroy()
+            root.destroy()  
+            break            
         root.update_idletasks()
         root.update()
 
-
+    #cleanup 
+    writeOutput(0)
+    sleep(0.2)
+    endPollingThread()
+    sys.exit(0)
+        
 main()
+
+
+

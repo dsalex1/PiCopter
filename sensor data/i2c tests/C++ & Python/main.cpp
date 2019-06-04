@@ -6,14 +6,12 @@
 #include <wiringPiI2C.h>
 #include <math.h>
 #include <fcntl.h>
-#ifdef __unix__
-   #include "includes/unixFunctions.hpp"
-#else
-   #include "includes/windowsFunctions.hpp"
-#endif
+#include "includes/unixFunctions.hpp"
 #include "./libs/lsm6/LSM6.h"
 #include "./libs/lis3/LIS3.h"
 #include "./libs/lps25/LPS25.h"
+
+#include "includes/QuadController.cpp"
 
 /*
  *    0       1
@@ -112,6 +110,8 @@ void readInput(){
 int i=0;
 void doFrame();
 float standard_pressure;
+QuadController* controller;
+
 int main()
 {
     long before;
@@ -144,7 +144,9 @@ int main()
         delayMicroseconds(100*1000);
     }
     standard_pressure/=5;
-  
+
+    controller=new QuadController();
+    
     while(1) {
         before = micros();
 
@@ -218,17 +220,22 @@ void doFrame(){
     
     getOrientation(ax,ay,az,gx,gy,gz,mx,my,mz);
     
+    //inputValues[0]=40;
+    
+    float* output;
     int* motorSpeeds= new int[4];
     
-    motorSpeeds[0]=(50+roll-pitch)*inputValues[0]/50;
-    motorSpeeds[1]=(50-roll-pitch)*inputValues[0]/50;
-    motorSpeeds[2]=(50+roll+pitch)*inputValues[0]/50;
-    motorSpeeds[3]=(50-roll+pitch)*inputValues[0]/50;
+    output=controller->run(new Vector3D(roll*3.1415/180,pitch*3.1415/180,yaw*3.1415/180),
+                         new Vector4D(0,0,0,inputValues[0]/100.0f));
+
+    for (int i=0;i<4;i++)
+      motorSpeeds[i]=(int)output[i];
     
     
     for (int i=0;i<4;i++)
         setPWM(i,motorSpeeds[i]);
-    
+        
+    //printf("%i %i %i %i \n",motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3]);
     sendData(7,int(roll),int(pitch),int(yaw),motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3]);
     i++;    
 }

@@ -1,6 +1,11 @@
-from turtle import Turtle, Screen
+from turtle import Turtle, Screen, getscreen,onkey
 import time
 
+def getTurtleScreen():
+    return getscreen()
+    
+def turtleOnkey(fun, key):
+    Screen().onkey(fun,key)
 
 class Plotter:
 
