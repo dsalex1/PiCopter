@@ -225,7 +225,7 @@ void doFrame(){
     float* output;
     int* motorSpeeds= new int[4];
     
-    output=controller->run(new Vector3D(roll*3.1415/180,pitch*3.1415/180,yaw*3.1415/180),
+    output=controller->run(new Vector3D(roll*3.1415/180,pitch*3.1415/180,-yaw*3.1415/180),
                          new Vector4D(0,0,0,inputValues[0]/100.0f));
 
     for (int i=0;i<4;i++)
