@@ -28,7 +28,7 @@ def input():
     roll = float(request.args.get("xl"))*300
     pitch = float(request.args.get("yl"))*300
     yaw = float(request.args.get("xr"))*100
-    power = float(request.args.get("yr"))*50
+    power = float(request.args.get("yr"))*100
     writeOutput(int(roll),int(pitch),int(yaw),int(power))
     return ""
 
@@ -102,8 +102,8 @@ def main():
     w3 = Button(root, text="End C Programm", command=pausePlotting)
     w3.pack()
 
-    scalebar = Scale(root, from_=530, to=0, tickinterval=10,
-               length=530, command=updatePWM)
+    scalebar = Scale(root, from_=730, to=0, tickinterval=10,
+               length=730, command=updatePWM)
     scalebar.set(0)
     scalebar.pack(side=LEFT)
     
@@ -119,7 +119,7 @@ def main():
     
     #acc = Plotter((1200, 250), (-600, 250), (-1000, 1000), 3, 3)
     #gyro = Plotter((1200, 250), (-600, 0), (-90000, 90000), 3, 3)
-    ori = Plotter((800, 360), (-400, -180-100-100), (-45, 45), 3, 3)
+    ori = Plotter((800, 360), (-400, -180-100-100), (-100, 100), 3, 3)
     speeds = Plotter((800, 200), (-400, 180-100-100), (-0,300), 4, 3)
     inputs = Plotter((800, 200), (-400, 180), (-100,100), 4, 3)
     #baro = Plotter((1200, 250), (-600, -500), (-1000,1000), 2, 3)

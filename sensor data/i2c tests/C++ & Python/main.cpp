@@ -68,7 +68,7 @@ void setPWM_raw(int channel, int on_val, int off_val){
 
 void setPWM(int channel, int value){
     
-    if (value>300) return; //safety line, dont go over 300 for now
+    if (value>400) return; //safety line, dont go over 300 for now
     
     if (value<0) value=0;
     if (value>530) value=530;
@@ -195,8 +195,8 @@ void getOrientation(float ax,float ay,float az,float gx,float gy,float gz,float 
 }
 
 
-int inputP=0;
-int inputD=0;
+float inputP=0;
+float inputD=0;
 
 float height=0;
 void doFrame(){
@@ -228,14 +228,15 @@ void doFrame(){
     int inputRoll =inputValues[0];
     int inputPitch=inputValues[1];
     int inputYaw  =0;//inputValues[2];
+    yaw=0;
     int inputPower=inputValues[3];
     
     float* output;
     int* motorSpeeds= new int[4];
     
-    if (inputP!=inputValues[4] || inputD!=inputValues[5]){
-        inputP    =inputValues[4];
-        inputD    =inputValues[5];
+    if (inputP!=inputValues[4]/10.0f || inputD!=inputValues[5]/10.0f){
+        inputP    =inputValues[4]/10.0f;
+        inputD    =inputValues[5]/10.0f;
         controller->setPD(inputP,inputD);
     }
     
@@ -243,17 +244,17 @@ void doFrame(){
                          new Vector4D(inputRoll/1000.0f,inputPitch/1000.0f,inputYaw/1000.0f,inputPower/100.0f));
 
     //for (int i=0;i<4;i++)
-    motorSpeeds[0]=(int)output[0];
-    motorSpeeds[1]=(int)output[1];
-    motorSpeeds[2]=(int)output[2];
-    motorSpeeds[3]=(int)output[3];
+    motorSpeeds[0]=(int)output[0];//inputPower>0?10:0;//
+    motorSpeeds[1]=inputPower>0?10:0;(int)output[1];//
+    motorSpeeds[2]=inputPower>0?10:0;(int)output[2];//
+    motorSpeeds[3]=(int)output[3];//inputPower>0?10:0;//
     
     
     for (int i=0;i<4;i++)
         setPWM(i,motorSpeeds[i]);
         
     //printf("%i %i %i %i \n",motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3]);
-    sendData(11,int(roll),int(pitch),int(yaw/4),motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3],/*inputRoll,inputPitch*/inputP*2,inputD*2,inputPower,inputYaw);
+    sendData(11,int(roll*10),int(pitch*10),int(yaw/4*10),motorSpeeds[0],motorSpeeds[1],motorSpeeds[2],motorSpeeds[3],/*inputRoll,inputPitch*/int(inputP*20),int(inputD*20),inputPower,inputYaw);
     i++;    
 }
 
